@@ -14,43 +14,58 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 require("oj-event");
-var oj_component_1 = require("oj-component");
+var oj_eventaggregator_1 = require("oj-eventaggregator");
+exports.getRootElements = function (selector, loaded) {
+    if (loaded === void 0) { loaded = false; }
+    var elements = Array.from(document.querySelectorAll(selector));
+    if (loaded) {
+        elements = elements.filter(function (x) { return x.getAttribute("data-loaded") !== null; });
+        elements.forEach(function (x) { return x.setAttribute("data-loaded", "loaded"); });
+    }
+    return elements;
+};
 var DirtyInput = /** @class */ (function (_super) {
     __extends(DirtyInput, _super);
     function DirtyInput(root) {
-        return _super.call(this, "dirty-input", root) || this;
+        var _this = _super.call(this) || this;
+        _this.id = DirtyInput.id++;
+        _this.root = root;
+        _this.root.on([
+            "input.dirty-input." + _this.id,
+            "change.dirty-input." + _this.id
+        ], function (e) { return _this.update(); });
+        _this.update();
+        DirtyInput.dirtyInputs.push(_this);
+        return _this;
     }
-    DirtyInput.mount = function () {
-        return oj_component_1.default.getRoots("input:not([data-dirty-input=\"loaded\"]), textarea:not([data-dirty-input=\"loaded\"])").map(function (x) { return new DirtyInput(x); });
+    DirtyInput.update = function () {
+        DirtyInput.dirtyInputs.forEach(function (x) { return x.update(); });
     };
-    DirtyInput.switch = function () {
-        DirtyInput.dirtyInputs.forEach(function (di) { return di.switch(); });
+    DirtyInput.unmount = function () {
+        DirtyInput.dirtyInputs.forEach(function (x) { return x.unmount(); });
     };
-    DirtyInput.prototype.initialize = function () {
-        var _this = this;
-        this.root.on("blur.dirty-input." + this.id, function (e) { return _this.switch(); });
-        this.switch();
-        DirtyInput.dirtyInputs.push(this);
+    DirtyInput.prototype.update = function () {
+        var value = this.root.value;
+        var dirty = value.trim().length > 0;
+        this.root.classList.toggle("dirty", dirty);
+        this.emit("change", { dirty: dirty, value: value });
     };
     DirtyInput.prototype.unmount = function () {
         this.root.classList.remove("dirty");
-        this.root.off("blur.dirty-input." + this.id);
-        var index = DirtyInput.dirtyInputs.indexOf(this);
-        if (index !== -1)
-            DirtyInput.dirtyInputs.splice(index, 1);
-    };
-    DirtyInput.prototype.switch = function () {
-        var value = this.root.value;
-        if (value.trim().length > 0) {
-            this.root.classList.add("dirty");
-            this.emit("change", { dirty: true, value: value });
-        }
-        else {
-            this.root.classList.remove("dirty");
-            this.emit("change", { dirty: false });
-        }
+        this.root.off([
+            "input.dirty-input." + this.id,
+            "change.dirty-input." + this.id
+        ]);
+        var i = DirtyInput.dirtyInputs.indexOf(this);
+        if (i !== -1)
+            DirtyInput.dirtyInputs.splice(i, 1);
     };
     DirtyInput.dirtyInputs = [];
+    DirtyInput.id = 0;
     return DirtyInput;
-}(oj_component_1.default));
+}(oj_eventaggregator_1.EventAggregator));
 exports.default = DirtyInput;
+exports.mount = function () {
+    return exports.getRootElements("input, textarea", true)
+        .map(function (x) { return new DirtyInput(x); });
+};

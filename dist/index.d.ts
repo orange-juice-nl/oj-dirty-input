@@ -1,11 +1,15 @@
 import "oj-event";
-import Component from "oj-component";
-export default class DirtyInput extends Component<"change"> {
+import { EventAggregator } from "oj-eventaggregator";
+export declare const getRootElements: <T extends HTMLElement>(selector: string, loaded?: boolean) => T[];
+export default class DirtyInput extends EventAggregator<"change"> {
     private static dirtyInputs;
-    static mount(): DirtyInput[];
-    static switch(): void;
+    private static id;
+    root: HTMLInputElement | HTMLTextAreaElement;
+    id: number;
+    static update(): void;
+    static unmount(): void;
     constructor(root: HTMLInputElement | HTMLTextAreaElement);
-    protected initialize(): void;
+    private update;
     unmount(): void;
-    private switch;
 }
+export declare const mount: () => DirtyInput[];
