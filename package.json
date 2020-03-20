@@ -1,6 +1,6 @@
 {
   "name": "oj-dirty-input",
-  "version": "1.0.4",
+  "version": "1.0.1",
   "homepage": "https://www.orange-juice.nl",
   "repository": {
     "type": "git",
@@ -19,7 +19,7 @@
     "share": "npm upgrade && npm version patch -force && npm run build && npm publish --registry https://registry.npmjs.org"
   },
   "author": "Marius Linders @ Orange Juice<marius.linders@orange-juice.nl>",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "oj-event": "^1.0.2",
     "oj-eventaggregator": "^1.0.2"
